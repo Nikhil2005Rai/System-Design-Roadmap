@@ -236,11 +236,178 @@ body {
   border-radius: 20px;
   font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
 }
 
 .topic-tag:hover {
   color: var(--text-primary);
   border-color: var(--text-muted);
+}
+
+.topic-tag.active {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: var(--accent-primary);
+  color: #c4b5fd;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.topic-filter-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- TOPIC EXPLAINER PANEL --- */
+.topic-explainer {
+  display: none;
+  background: linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(236,72,153,0.04) 100%);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.topic-explainer.visible { display: block; }
+
+.topic-explainer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.topic-explainer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.topic-explainer-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c4b5fd;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.topic-explainer-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.topic-explainer-close:hover { color: var(--text-primary); }
+
+.topic-explainer-body {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.topic-explainer-body strong { color: var(--text-primary); }
+
+.topic-explainer-body .t-analogy {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.25);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* --- CONCEPT BOX (kid-friendly explainer) --- */
+.concept-box {
+  background: linear-gradient(135deg, rgba(139,92,246,0.07) 0%, rgba(236,72,153,0.05) 100%);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.concept-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.concept-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.concept-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.concept-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c4b5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.concept-box p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.concept-box p:last-child { margin-bottom: 0; }
+
+.concept-box strong { color: var(--text-primary); }
+
+.concept-box .analogy {
+  background: rgba(0,0,0,0.25);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* --- DIAGRAM ENHANCEMENTS --- */
+.diagram-wrap svg {
+  display: block;
+  width: 100%;
+}
+
+/* SVG circle support (consistent hash ring etc.) */
+svg .c-purple circle { stroke: #8b5cf6; fill: rgba(139, 92, 246, 0.15); }
+svg .c-teal circle   { stroke: #14b8a6; fill: rgba(20, 184, 166, 0.15); }
+svg .c-coral circle  { stroke: #f43f5e; fill: rgba(244, 63, 94, 0.15); }
+svg .c-blue circle   { stroke: #3b82f6; fill: rgba(59, 130, 246, 0.15); }
+svg .c-amber circle  { stroke: #f59e0b; fill: rgba(245, 158, 11, 0.15); }
+svg .c-green circle  { stroke: #10b981; fill: rgba(16, 185, 129, 0.15); }
+
+/* QA block hidden state */
+.qa-block.filtered-out {
+  display: none;
 }
 
 /* --- Q&A BLOCKS (PREMIUM CARDS) --- */
@@ -1328,38 +1495,779 @@ function showSection(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ---- CONCEPT BOX DATA ----
+const conceptBoxes = {
+  's1': {
+    emoji: '🏗️',
+    title: 'What is this section about?',
+    text: `Imagine you're building a really popular toy store website. On normal days, 100 kids visit. But one day, a famous YouTuber mentions it — now <strong>1 million kids</strong> visit at the same time! Will your website survive? That's what <strong>system fundamentals</strong> is about — knowing how much traffic your system can handle before it breaks, and how to estimate that number quickly in an interview.`,
+    analogy: '🧮 Think of QPS (queries per second) like the number of customers walking through a store door every second. 1 QPS = chill Sunday morning. 100K QPS = Black Friday madness. Your job is to know which one you\'re dealing with before building.'
+  },
+  's2': {
+    emoji: '📈',
+    title: 'Scaling — growing without breaking',
+    text: `Think of your system like a restaurant. <strong>Vertical scaling</strong> = getting a bigger kitchen with more equipment. <strong>Horizontal scaling</strong> = opening more kitchens. The problem with one giant kitchen? If it burns down, everyone starves. With many kitchens, one fire doesn't stop the other 99.`,
+    analogy: '🍕 Stateless services are like pizza delivery drivers — any driver can deliver any order. Stateful services are like waiters assigned to specific tables — if your waiter calls in sick, nobody serves your table.'
+  },
+  's3': {
+    emoji: '⚖️',
+    title: 'Load Balancing — the traffic cop of the internet',
+    text: `A load balancer is like a <strong>school cafeteria manager</strong> who directs kids to whichever lunch line is shortest. Without them, 500 kids pile into line 1 while lines 2–5 are empty. The load balancer makes sure no single server gets crushed while others sit idle.`,
+    analogy: '🔄 Consistent hashing is like dividing a pizza into slices — when you add or remove a slice, only the neighbors are affected. Not the entire pizza gets rearranged.'
+  },
+  's4': {
+    emoji: '⚡',
+    title: 'Caching — remembering the answer so you don\'t have to look it up again',
+    text: `Imagine your teacher asks you "What's the capital of France?" every 5 minutes. After the first time you look it up, you just <strong>remember it</strong> — that's caching! Instead of asking the database the same question millions of times, we store the answer in super-fast memory (Redis) and reuse it.`,
+    analogy: '📚 Cache miss = you forgot the answer and have to look it up (database). Cache hit = you remembered instantly (Redis). Cache stampede = the whole class forgets at the same time and 30 kids run to the library at once, crashing into each other.'
+  },
+  's5': {
+    emoji: '🗄️',
+    title: 'Databases — where your data actually lives',
+    text: `Think of a <strong>SQL database</strong> like a super organized spreadsheet — perfect when your data has a fixed structure and you need precise answers. A <strong>NoSQL database</strong> is like a bunch of sticky notes — flexible and fast, but you can't easily connect data across notes. Neither is "better" — it depends on what you're storing.`,
+    analogy: '🏦 SQL = bank vault (structured, safe, with rules). NoSQL = a filing cabinet with folders (fast, flexible, but you manage the structure yourself). CAP theorem says: during a network outage, you must choose — give the right answer slowly, or a possibly-stale answer fast.'
+  },
+  's6': {
+    emoji: '🌐',
+    title: 'Networking — how data travels across the internet',
+    text: `When you type <strong>google.com</strong>, a ton of invisible steps happen before you see the page. DNS is like a phone book that translates "google.com" into an IP address. TCP is like certified mail — guaranteed delivery. UDP is like a postcard — fast, but might get lost. TLS is the envelope that seals your data so nobody else can read it.`,
+    analogy: '📦 HTTP is the language your browser and servers speak. HTTPS = HTTP with a locked box around the message. CDN = instead of shipping from one warehouse, Amazon places mini-warehouses in every city so delivery is faster.'
+  },
+  's7': {
+    emoji: '🔑',
+    title: 'Security — keeping the bad guys out',
+    text: `Imagine your app is a <strong>bank vault</strong>. Authentication is checking your ID at the door (are you who you say you are?). Authorization is checking what you're allowed to touch inside (can you access THIS account?). OAuth is like letting a valet park your car — you give them a limited key that only starts the car, not one that opens your house.`,
+    analogy: '🎟️ JWT token = a wristband at a concert. The bouncer stamps it once, and you can get back in without lining up again. The stamp can\'t be forged because it\'s cryptographically signed.'
+  },
+  's8': {
+    emoji: '🩺',
+    title: 'Reliability — building systems that don\'t break',
+    text: `Think of reliability like a <strong>hospital</strong>. A 99% uptime sounds great — but that's 3.65 days of downtime per year. Hospitals can't close for 3 days a year! "Five nines" (99.999%) = only 5 minutes of downtime per year. That's the difference between "pretty good" and "critical infrastructure."`,
+    analogy: '🔌 Redundancy = having a backup generator. Failover = the generator automatically turning on. Circuit breaker = a fuse that trips before your entire electrical system fries. These are the patterns that let Netflix keep streaming even when AWS has an outage.'
+  },
+  's9': {
+    emoji: '🏊',
+    title: 'Distributed Systems — many computers pretending to be one',
+    text: `A distributed system is like a <strong>relay race team</strong> — multiple runners passing a baton to cross a finish line no single runner could reach alone. The tricky part? The runners can't always see each other, the baton might get dropped, and sometimes two runners think they're the one supposed to run next.`,
+    analogy: '📬 Idempotency is like sending a "mark as read" button in email — pressing it 5 times has the same result as pressing it once. This matters when networks drop requests and clients retry — you don\'t want the same payment processed twice!'
+  },
+  's10': {
+    emoji: '📬',
+    title: 'Message Queues — a buffer between fast senders and slow receivers',
+    text: `Imagine a <strong>post office</strong> between a sender and recipient. Instead of the sender waiting for the recipient to be available, they drop the letter at the post office and leave. The recipient picks it up when ready. This is exactly what Kafka and RabbitMQ do — they let different parts of your system work at their own pace without blocking each other.`,
+    analogy: '🎙️ Pub/Sub is like a radio station. One broadcaster (publisher) sends a signal. Thousands of listeners (subscribers) tune in independently. Adding a new listener doesn\'t require any change to the radio station.'
+  },
+  's11': {
+    emoji: '🧱',
+    title: 'LLD & SOLID — writing code that won\'t make you cry later',
+    text: `SOLID principles are like <strong>rules for building with LEGO</strong>. If every brick can only connect in one specific way (SRP), has a standard connector size (OCP), and you can swap red bricks for blue without breaking the castle (LSP/DIP) — building becomes predictable and maintainable even when 100 people work on the same castle.`,
+    analogy: '🤯 Violating SRP is like a Swiss Army knife that also drives your car, makes coffee, and files your taxes. It sounds useful until one thing breaks and you can\'t use any of the others.'
+  },
+  's12': {
+    emoji: '🧩',
+    title: 'Design Patterns — battle-tested solutions to recurring problems',
+    text: `Design patterns are like <strong>cooking recipes</strong> — smart people already figured out the best way to make scrambled eggs, so you don't have to experiment every morning. Singleton, Factory, Strategy, Observer — these are recipes that solve specific code problems that engineers encounter over and over again.`,
+    analogy: '🏭 Factory pattern = a vending machine. You press "Coke" and get a Coke — you don\'t know or care how it was made inside. Strategy pattern = a car with interchangeable engines — same car body, but you can swap the engine without redesigning everything.'
+  },
+  's14': {
+    emoji: '🎯',
+    title: 'Practice Problems — applying everything to real Google-style questions',
+    text: `These are the <strong>actual questions</strong> Google, Meta, Amazon, and Microsoft ask in system design interviews. They test whether you can take all the fundamentals — caching, databases, scaling, queues — and combine them into a coherent design under pressure. Walk through each one like you're in the interview room.`,
+    analogy: '🧪 Treat each design as an experiment: state your assumptions, estimate the scale, draw the components, identify the hard parts, and explain trade-offs. Interviewers don\'t want perfection — they want to see you think clearly under constraints.'
+  },
+  's15': {
+    emoji: '🎤',
+    title: 'Interview Strategy — how to not freeze up on the big day',
+    text: `The system design interview is less like a test and more like a <strong>whiteboard conversation with a senior engineer</strong>. They already know the answer — they want to see how you think. Do you ask clarifying questions? Do you consider scale? Do you know the trade-offs? Do you handle feedback gracefully? These skills matter more than knowing every detail of Kafka internals.`,
+    analogy: '🗺️ Think of it like giving someone directions. A good navigator asks "are you driving or walking?" before suggesting a route. A bad one launches into turn-by-turn directions without knowing the starting point. Requirements-first is your most powerful interview move.'
+  }
+};
+
+// ---- DIAGRAMS FOR KEY QA ITEMS ----
+// Map: sectionId -> questionIndex -> extra HTML to inject after .answer-body
+const extraDiagrams = {
+  's1': {
+    0: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">QPS estimation formula — quick reference</div>
+  <svg width="100%" viewBox="0 0 680 130" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <rect x="10" y="30" width="140" height="70" rx="8" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text class="th" x="80" y="58" text-anchor="middle" dominant-baseline="central" font-size="13">DAU</text>
+    <text class="ts" x="80" y="78" text-anchor="middle" dominant-baseline="central" font-size="11">e.g. 10M users</text>
+    <line x1="150" y1="65" x2="188" y2="65" stroke="#8b5cf6" stroke-width="1.2" marker-end="url(#ar1)"/>
+    <text class="ts" x="169" y="56" text-anchor="middle" font-size="11">×15 req</text>
+    <rect x="190" y="30" width="160" height="70" rx="8" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="0.8"/>
+    <text class="th" x="270" y="58" text-anchor="middle" dominant-baseline="central" font-size="13">Req / day</text>
+    <text class="ts" x="270" y="78" text-anchor="middle" dominant-baseline="central" font-size="11">150M requests</text>
+    <line x1="350" y1="65" x2="388" y2="65" stroke="#14b8a6" stroke-width="1.2" marker-end="url(#ar1)"/>
+    <text class="ts" x="369" y="56" text-anchor="middle" font-size="11">÷86,400s</text>
+    <rect x="390" y="30" width="140" height="70" rx="8" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="0.8"/>
+    <text class="th" x="460" y="58" text-anchor="middle" dominant-baseline="central" font-size="13">Avg QPS</text>
+    <text class="ts" x="460" y="78" text-anchor="middle" dominant-baseline="central" font-size="11">~1,750 QPS</text>
+    <line x1="530" y1="65" x2="568" y2="65" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ar1)"/>
+    <text class="ts" x="549" y="56" text-anchor="middle" font-size="11">×3 peak</text>
+    <rect x="570" y="30" width="100" height="70" rx="8" fill="rgba(236,72,153,0.08)" stroke="#ec4899" stroke-width="0.8"/>
+    <text class="th" x="620" y="58" text-anchor="middle" dominant-baseline="central" font-size="13">Peak QPS</text>
+    <text class="ts" x="620" y="78" text-anchor="middle" dominant-baseline="central" font-size="11">~5,250</text>
+  </svg>
+</div>`,
+    4: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">SPOF elimination — before vs after</div>
+  <svg width="100%" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+    <text class="ts" x="170" y="20" text-anchor="middle" font-size="12" fill="#f43f5e">❌ Single Point of Failure</text>
+    <rect x="130" y="30" width="80" height="36" rx="6" fill="rgba(244,63,94,0.08)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="170" y="48" text-anchor="middle" dominant-baseline="central" font-size="12">1 LB</text>
+    <line x1="170" y1="66" x2="170" y2="84" stroke="#f43f5e" stroke-width="1" stroke-dasharray="4"/>
+    <rect x="130" y="86" width="80" height="36" rx="6" fill="rgba(244,63,94,0.08)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="170" y="104" text-anchor="middle" dominant-baseline="central" font-size="12">1 DB</text>
+    <text class="ts" x="170" y="155" text-anchor="middle" font-size="11" fill="#f43f5e">If DB fails → entire system down</text>
+    <line x1="340" y1="10" x2="340" y2="170" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text class="ts" x="510" y="20" text-anchor="middle" font-size="12" fill="#10b981">✅ Redundant Design</text>
+    <rect x="470" y="30" width="80" height="36" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="510" y="48" text-anchor="middle" dominant-baseline="central" font-size="12">LB Active</text>
+    <rect x="560" y="30" width="80" height="36" rx="6" fill="rgba(16,185,129,0.05)" stroke="#10b981" stroke-width="0.8" stroke-dasharray="3"/>
+    <text class="th" x="600" y="48" text-anchor="middle" dominant-baseline="central" font-size="12">LB Standby</text>
+    <line x1="510" y1="66" x2="510" y2="84" stroke="#10b981" stroke-width="1"/>
+    <rect x="400" y="86" width="80" height="36" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="440" y="104" text-anchor="middle" dominant-baseline="central" font-size="12">DB Primary</text>
+    <rect x="500" y="86" width="80" height="36" rx="6" fill="rgba(16,185,129,0.05)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="540" y="104" text-anchor="middle" dominant-baseline="central" font-size="12">DB Replica</text>
+    <rect x="600" y="86" width="70" height="36" rx="6" fill="rgba(16,185,129,0.05)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="635" y="104" text-anchor="middle" dominant-baseline="central" font-size="12">Replica 2</text>
+    <text class="ts" x="510" y="155" text-anchor="middle" font-size="11" fill="#10b981">If one node fails → others take over automatically</text>
+  </svg>
+</div>`
+  },
+  's2': {
+    0: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">Stateless vs stateful architecture</div>
+  <svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+    <text class="ts" x="170" y="18" text-anchor="middle" font-size="12" fill="#f43f5e">❌ Stateful — sticky sessions</text>
+    <rect x="60" y="28" width="220" height="50" rx="8" fill="rgba(244,63,94,0.06)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="170" y="53" text-anchor="middle" dominant-baseline="central" font-size="12">Load Balancer</text>
+    <line x1="100" y1="78" x2="100" y2="100" stroke="#f43f5e" stroke-width="1"/>
+    <line x1="170" y1="78" x2="170" y2="100" stroke="#f43f5e" stroke-width="1"/>
+    <line x1="240" y1="78" x2="240" y2="100" stroke="#f43f5e" stroke-width="1"/>
+    <rect x="55" y="100" width="80" height="40" rx="6" fill="rgba(244,63,94,0.08)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="95" y="120" text-anchor="middle" dominant-baseline="central" font-size="11">Server A</text>
+    <text class="ts" x="95" y="133" text-anchor="middle" font-size="9" fill="#f43f5e">session X</text>
+    <rect x="130" y="100" width="80" height="40" rx="6" fill="rgba(244,63,94,0.08)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="170" y="120" text-anchor="middle" dominant-baseline="central" font-size="11">Server B</text>
+    <text class="ts" x="170" y="133" text-anchor="middle" font-size="9" fill="#f43f5e">session Y</text>
+    <rect x="205" y="100" width="80" height="40" rx="6" fill="rgba(244,63,94,0.08)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="245" y="120" text-anchor="middle" dominant-baseline="central" font-size="11">Server C</text>
+    <text class="ts" x="245" y="133" text-anchor="middle" font-size="9" fill="#f43f5e">session Z</text>
+    <text class="ts" x="170" y="170" text-anchor="middle" font-size="11" fill="#f43f5e">Server A dies → User X loses session</text>
+    <line x1="340" y1="10" x2="340" y2="190" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text class="ts" x="510" y="18" text-anchor="middle" font-size="12" fill="#10b981">✅ Stateless — any server handles any request</text>
+    <rect x="400" y="28" width="220" height="50" rx="8" fill="rgba(16,185,129,0.06)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="510" y="53" text-anchor="middle" dominant-baseline="central" font-size="12">Load Balancer</text>
+    <line x1="440" y1="78" x2="440" y2="100" stroke="#10b981" stroke-width="1"/>
+    <line x1="510" y1="78" x2="510" y2="100" stroke="#10b981" stroke-width="1"/>
+    <line x1="580" y1="78" x2="580" y2="100" stroke="#10b981" stroke-width="1"/>
+    <rect x="395" y="100" width="80" height="40" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="435" y="120" text-anchor="middle" dominant-baseline="central" font-size="11">Server A</text>
+    <rect x="470" y="100" width="80" height="40" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="510" y="120" text-anchor="middle" dominant-baseline="central" font-size="11">Server B</text>
+    <rect x="545" y="100" width="80" height="40" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="585" y="120" text-anchor="middle" dominant-baseline="central" font-size="11">Server C</text>
+    <rect x="455" y="150" width="110" height="32" rx="6" fill="rgba(59,130,246,0.1)" stroke="#3b82f6" stroke-width="0.8"/>
+    <text class="th" x="510" y="166" text-anchor="middle" dominant-baseline="central" font-size="11">Redis (sessions)</text>
+    <text class="ts" x="510" y="188" text-anchor="middle" font-size="11" fill="#10b981">Any server reads session from Redis — no SPOF</text>
+  </svg>
+</div>`
+  },
+  's4': {
+    0: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">Cache write strategies — comparison</div>
+  <svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <text class="th" x="110" y="18" text-anchor="middle" font-size="12">Cache-Aside</text>
+    <rect x="30" y="28" width="80" height="34" rx="6" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text class="ts" x="70" y="45" text-anchor="middle" dominant-baseline="central" font-size="11">App</text>
+    <rect x="140" y="28" width="80" height="34" rx="6" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="0.8"/>
+    <text class="ts" x="180" y="45" text-anchor="middle" dominant-baseline="central" font-size="11">Cache</text>
+    <rect x="85" y="90" width="80" height="34" rx="6" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="0.8"/>
+    <text class="ts" x="125" y="107" text-anchor="middle" dominant-baseline="central" font-size="11">Database</text>
+    <line x1="110" y1="62" x2="140" y2="62" stroke="#8b5cf6" stroke-width="1" marker-end="url(#ar2)"/>
+    <text class="ts" x="125" y="54" text-anchor="middle" font-size="9">1. read?</text>
+    <line x1="125" y1="62" x2="125" y2="90" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3"/>
+    <text class="ts" x="135" y="80" text-anchor="start" font-size="9">2. miss→DB</text>
+    <text class="ts" x="110" y="145" text-anchor="middle" font-size="10" fill="#14b8a6">App manages cache explicitly</text>
+    <line x1="230" y1="10" x2="230" y2="190" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text class="th" x="340" y="18" text-anchor="middle" font-size="12">Write-Through</text>
+    <rect x="260" y="28" width="80" height="34" rx="6" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text class="ts" x="300" y="45" text-anchor="middle" dominant-baseline="central" font-size="11">App</text>
+    <line x1="340" y1="45" x2="368" y2="45" stroke="#14b8a6" stroke-width="1" marker-end="url(#ar2)"/>
+    <rect x="370" y="28" width="80" height="34" rx="6" fill="rgba(20,184,166,0.08)" stroke="#14b8a6" stroke-width="0.8"/>
+    <text class="ts" x="410" y="45" text-anchor="middle" dominant-baseline="central" font-size="11">Cache+DB</text>
+    <text class="ts" x="340" y="90" text-anchor="middle" font-size="10" fill="#14b8a6">Write hits both always</text>
+    <text class="ts" x="340" y="108" text-anchor="middle" font-size="10" fill="#f59e0b">✓ consistent ✗ slower writes</text>
+    <line x1="450" y1="10" x2="450" y2="190" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text class="th" x="565" y="18" text-anchor="middle" font-size="12">Write-Back</text>
+    <rect x="480" y="28" width="80" height="34" rx="6" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text class="ts" x="520" y="45" text-anchor="middle" dominant-baseline="central" font-size="11">App</text>
+    <line x1="560" y1="45" x2="588" y2="45" stroke="#ec4899" stroke-width="1" marker-end="url(#ar2)"/>
+    <rect x="590" y="28" width="80" height="34" rx="6" fill="rgba(236,72,153,0.08)" stroke="#ec4899" stroke-width="0.8"/>
+    <text class="ts" x="630" y="45" text-anchor="middle" dominant-baseline="central" font-size="11">Cache only</text>
+    <line x1="630" y1="62" x2="630" y2="80" stroke="#ec4899" stroke-width="1" stroke-dasharray="3"/>
+    <text class="ts" x="630" y="90" text-anchor="middle" font-size="9" fill="#f59e0b">async → DB later</text>
+    <text class="ts" x="565" y="120" text-anchor="middle" font-size="10" fill="#10b981">✓ fastest writes</text>
+    <text class="ts" x="565" y="138" text-anchor="middle" font-size="10" fill="#f43f5e">✗ data loss if cache dies</text>
+  </svg>
+</div>`
+  },
+  's5': {
+    3: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">CAP theorem — the impossible triangle</div>
+  <svg width="100%" viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="340,20 160,190 520,190" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    <circle cx="340" cy="20" r="38" fill="rgba(139,92,246,0.12)" stroke="#8b5cf6" stroke-width="1"/>
+    <text class="th" x="340" y="15" text-anchor="middle" font-size="13">Consistency</text>
+    <text class="ts" x="340" y="32" text-anchor="middle" font-size="10">Every read gets the</text>
+    <text class="ts" x="340" y="44" text-anchor="middle" font-size="10">latest write</text>
+    <circle cx="160" cy="190" r="38" fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="1"/>
+    <text class="th" x="160" y="185" text-anchor="middle" font-size="13">Availability</text>
+    <text class="ts" x="160" y="200" text-anchor="middle" font-size="10">Every request gets</text>
+    <text class="ts" x="160" y="212" text-anchor="middle" font-size="10">a response</text>
+    <circle cx="520" cy="190" r="38" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="1"/>
+    <text class="th" x="520" y="185" text-anchor="middle" font-size="13">Partition</text>
+    <text class="ts" x="520" y="200" text-anchor="middle" font-size="10">Tolerant</text>
+    <text class="ts" x="520" y="212" text-anchor="middle" font-size="10">Works despite failures</text>
+    <rect x="230" y="80" width="70" height="26" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.6"/>
+    <text class="ts" x="265" y="93" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#10b981">CP: ZooKeeper</text>
+    <rect x="370" y="80" width="70" height="26" rx="6" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="0.6"/>
+    <text class="ts" x="405" y="93" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#f59e0b">AP: Cassandra</text>
+    <text class="ts" x="340" y="165" text-anchor="middle" font-size="10" fill="#a1a1aa">P is always required → real choice: C vs A during a partition</text>
+  </svg>
+</div>`
+  },
+  's10': {
+    0: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">Message queue — producer / consumer flow</div>
+  <svg width="100%" viewBox="0 0 680 150" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <rect x="10" y="50" width="110" height="50" rx="8" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text class="th" x="65" y="68" text-anchor="middle" dominant-baseline="central" font-size="12">Producers</text>
+    <text class="ts" x="65" y="85" text-anchor="middle" font-size="10">Orders API</text>
+    <line x1="120" y1="75" x2="178" y2="75" stroke="#8b5cf6" stroke-width="1.2" marker-end="url(#ar3)"/>
+    <rect x="180" y="20" width="200" height="110" rx="8" fill="rgba(20,184,166,0.06)" stroke="#14b8a6" stroke-width="0.8"/>
+    <text class="th" x="280" y="40" text-anchor="middle" dominant-baseline="central" font-size="12">Queue / Kafka Topic</text>
+    <rect x="195" y="52" width="170" height="28" rx="4" fill="rgba(20,184,166,0.1)" stroke="#14b8a6" stroke-width="0.5"/>
+    <text class="ts" x="280" y="66" text-anchor="middle" dominant-baseline="central" font-size="11">msg1 | msg2 | msg3 | msg4</text>
+    <text class="ts" x="280" y="100" text-anchor="middle" font-size="10" fill="#a1a1aa">Messages persist to disk</text>
+    <text class="ts" x="280" y="115" text-anchor="middle" font-size="10" fill="#a1a1aa">Replay possible (Kafka)</text>
+    <line x1="380" y1="55" x2="438" y2="40" stroke="#14b8a6" stroke-width="1" marker-end="url(#ar3)"/>
+    <line x1="380" y1="75" x2="438" y2="75" stroke="#14b8a6" stroke-width="1" marker-end="url(#ar3)"/>
+    <line x1="380" y1="95" x2="438" y2="110" stroke="#14b8a6" stroke-width="1" marker-end="url(#ar3)"/>
+    <rect x="440" y="20" width="110" height="38" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="495" y="39" text-anchor="middle" dominant-baseline="central" font-size="11">Email Service</text>
+    <rect x="440" y="57" width="110" height="38" rx="6" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="0.8"/>
+    <text class="th" x="495" y="76" text-anchor="middle" dominant-baseline="central" font-size="11">Analytics</text>
+    <rect x="440" y="94" width="110" height="38" rx="6" fill="rgba(236,72,153,0.08)" stroke="#ec4899" stroke-width="0.8"/>
+    <text class="th" x="495" y="113" text-anchor="middle" dominant-baseline="central" font-size="11">Inventory</text>
+    <text class="ts" x="560" y="145" text-anchor="middle" font-size="10" fill="#10b981">All 3 consumers get same message independently</text>
+  </svg>
+</div>`
+  },
+  's3': {
+    1: '' // already has diagram in original
+  },
+  's14': {
+    2: `<div class="diagram-wrap" style="margin-top:20px">
+  <div class="diagram-label">LRU Cache — HashMap + doubly linked list internals</div>
+  <svg width="100%" viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <text class="th" x="100" y="16" text-anchor="middle" font-size="12">HashMap</text>
+    <rect x="10" y="24" width="180" height="120" rx="8" fill="rgba(139,92,246,0.06)" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text class="ts" x="100" y="46" text-anchor="middle" font-size="11">"cat" → node_ptr</text>
+    <text class="ts" x="100" y="64" text-anchor="middle" font-size="11">"dog" → node_ptr</text>
+    <text class="ts" x="100" y="82" text-anchor="middle" font-size="11">"fox" → node_ptr</text>
+    <text class="ts" x="100" y="100" text-anchor="middle" font-size="11">"owl" → node_ptr</text>
+    <text class="ts" x="100" y="130" text-anchor="middle" font-size="10" fill="#a1a1aa">O(1) key lookup</text>
+    <line x1="190" y1="84" x2="238" y2="84" stroke="#8b5cf6" stroke-width="1" marker-end="url(#ar4)"/>
+    <text class="th" x="440" y="16" text-anchor="middle" font-size="12">Doubly Linked List (Most Recent → LRU)</text>
+    <text class="ts" x="264" y="50" text-anchor="middle" font-size="10" fill="#10b981">HEAD (most recent)</text>
+    <rect x="240" y="60" width="80" height="48" rx="6" fill="rgba(16,185,129,0.08)" stroke="#10b981" stroke-width="0.8"/>
+    <text class="th" x="280" y="81" text-anchor="middle" dominant-baseline="central" font-size="12">"cat"</text>
+    <text class="ts" x="280" y="98" text-anchor="middle" font-size="10">val: 5</text>
+    <line x1="320" y1="84" x2="348" y2="84" stroke="var(--border-strong)" stroke-width="1.2"/>
+    <rect x="350" y="60" width="80" height="48" rx="6" fill="rgba(59,130,246,0.08)" stroke="#3b82f6" stroke-width="0.8"/>
+    <text class="th" x="390" y="81" text-anchor="middle" dominant-baseline="central" font-size="12">"dog"</text>
+    <text class="ts" x="390" y="98" text-anchor="middle" font-size="10">val: 3</text>
+    <line x1="430" y1="84" x2="458" y2="84" stroke="var(--border-strong)" stroke-width="1.2"/>
+    <rect x="460" y="60" width="80" height="48" rx="6" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="0.8"/>
+    <text class="th" x="500" y="81" text-anchor="middle" dominant-baseline="central" font-size="12">"fox"</text>
+    <text class="ts" x="500" y="98" text-anchor="middle" font-size="10">val: 7</text>
+    <line x1="540" y1="84" x2="568" y2="84" stroke="var(--border-strong)" stroke-width="1.2"/>
+    <rect x="570" y="60" width="80" height="48" rx="6" fill="rgba(244,63,94,0.08)" stroke="#f43f5e" stroke-width="0.8"/>
+    <text class="th" x="610" y="81" text-anchor="middle" dominant-baseline="central" font-size="12">"owl"</text>
+    <text class="ts" x="610" y="98" text-anchor="middle" font-size="10">val: 1</text>
+    <text class="ts" x="610" y="126" text-anchor="middle" font-size="10" fill="#f43f5e">TAIL — evict next</text>
+    <text class="ts" x="440" y="155" text-anchor="middle" font-size="10" fill="#a1a1aa">On get("cat"): HashMap finds node in O(1) → move to HEAD of list in O(1)</text>
+  </svg>
+</div>`
+  }
+};
+
+// ---- TOPIC EXPLAINER DATA ----
+const topicExplainers = {
+  // Fundamentals
+  'Throughput vs Latency': {
+    explain: '<strong>Throughput</strong> = how many cars can pass through a highway per hour. <strong>Latency</strong> = how long it takes one car to drive from start to finish. A wide highway (high throughput) with heavy traffic can still make each car slow (high latency). You want both — but they often trade off against each other.',
+    analogy: '🚗 A McDonald\'s drive-through serving 200 cars/hour is high throughput. Your individual wait time of 4 minutes is latency. Batching orders increases throughput but increases your personal wait.'
+  },
+  'QPS': {
+    explain: '<strong>Queries Per Second</strong> — how many requests hit your server every second. 1 QPS = a tiny personal blog. 1,000 QPS = a medium product. 100,000 QPS = Google Search scale. This number drives every design decision: how many servers you need, whether you need caching, whether you need sharding.',
+    analogy: '🎟️ Imagine a ticket booth. 1 QPS = one person walks up per second — one employee handles it fine. 100K QPS = a stadium gate opening — you need hundreds of booths running in parallel.'
+  },
+  'Availability': {
+    explain: '<strong>Availability</strong> = what percentage of time your system is working. 99% sounds great but means 3.65 days of downtime per year. "Five nines" (99.999%) = only 5 minutes downtime per year. Every extra 9 costs exponentially more to build. Banks and hospitals need 99.999%. A blog can be fine at 99%.',
+    analogy: '💡 A light bulb that works 99% of the time goes dark for 3+ days a year. A hospital\'s power supply needs to work 99.999% — that\'s why they have backup generators, and generators for the generators.'
+  },
+  'Consistency': {
+    explain: '<strong>Consistency</strong> = every user sees the same data at the same time. If you update your profile picture, does your friend immediately see the new one — or the old one for the next few seconds? Strong consistency = always see latest. Eventual consistency = you\'ll see the latest eventually, but maybe not instantly.',
+    analogy: '📱 When you edit a Google Doc, your teammate sees the change within milliseconds — that\'s strong consistency. When you post on Instagram, some users might see your post 2 seconds later than others — that\'s eventual consistency.'
+  },
+  'Fault Tolerance': {
+    explain: '<strong>Fault tolerance</strong> = the system keeps working even when parts of it break. If one server crashes, do all users get errors? Or does traffic automatically route to healthy servers? True fault tolerance means users never notice a failure because the system silently recovers.',
+    analogy: '✈️ Planes have 4 engines but can fly on 2. They don\'t land if one engine fails — they keep going. Your system should work the same way: lose a database replica? Still running. Lose an entire data center? Still running.'
+  },
+  'Scalability': {
+    explain: '<strong>Scalability</strong> = can your system handle 10x more users without completely redesigning it? A scalable system grows gracefully — add more servers, traffic handled. A non-scalable system hits a wall and collapses under load.',
+    analogy: '🏪 A corner store can\'t handle 10,000 customers. Walmart can. The difference isn\'t the products — it\'s the architecture: multiple checkout lanes, distribution centers, inventory systems. Scalability is architecture, not just hardware.'
+  },
+  'Stateless vs Stateful': {
+    explain: '<strong>Stateless</strong> = the server remembers nothing between requests. Every request carries everything the server needs. <strong>Stateful</strong> = the server remembers your session. Stateless is easier to scale (any server handles any request) but requires the client or a shared store to carry state.',
+    analogy: '🍔 A fast food cashier (stateless) treats every customer identically — you tell them your order fresh each time. A personal waiter at a restaurant (stateful) remembers you like no onions and already knows your usual drink. The fast food model scales to millions; the personal waiter doesn\'t.'
+  },
+  // Scaling
+  'Vertical Scaling': {
+    explain: '<strong>Vertical scaling</strong> (scale up) = make your single machine more powerful. Add more RAM, faster CPU, bigger disk. Simple — no code changes needed. But there\'s a ceiling: the most powerful single server on Earth still can\'t handle Google-scale traffic, and if it crashes, everything goes down.',
+    analogy: '🏋️ Lifting heavier weights makes you stronger — up to a point. You can\'t just keep adding weight forever. Eventually you need a whole team of people carrying it together.'
+  },
+  'Horizontal Scaling': {
+    explain: '<strong>Horizontal scaling</strong> (scale out) = add more machines instead of making one machine bigger. 1 server → 10 servers → 1000 servers. Each handles a fraction of the load. This is how Google, Netflix, Amazon scale — not by having one super-computer, but millions of average ones.',
+    analogy: '🍕 One pizza oven can make 10 pizzas/hour. Adding a second identical oven doubles capacity. Adding a tenth gives you 100 pizzas/hour. You don\'t need to build a magical giant oven — just add normal ovens.'
+  },
+  'Auto Scaling': {
+    explain: '<strong>Auto scaling</strong> = your system automatically adds or removes servers based on traffic. Traffic spikes at 9am? New servers spin up. Traffic drops at 3am? Servers shut down. You only pay for what you use, and you never run out of capacity.',
+    analogy: '🚕 Uber surge pricing triggers more drivers to come online when demand is high. When demand drops, drivers go home. Auto scaling is the same concept: the "fleet" grows and shrinks automatically based on demand.'
+  },
+  'Stateless Architecture': {
+    explain: 'When every server in your fleet is stateless, a load balancer can send any request to any server — because they all behave identically. No sticky sessions, no data stranded on one machine. State lives in Redis or a database, not in server memory.',
+    analogy: '🏦 An ATM is stateless — any ATM can serve any customer because your account data lives in the bank\'s central database, not inside the ATM machine itself.'
+  },
+  'Microservices vs Monolith': {
+    explain: '<strong>Monolith</strong> = everything in one big codebase. Simple to start, hard to scale independently. <strong>Microservices</strong> = split into small services (Auth, Payments, Notifications...), each deployable independently. Microservices let different teams work in parallel and scale individual features — but add huge operational complexity.',
+    analogy: '🏠 A monolith is like a house where the kitchen, bedroom, and bathroom share the same walls — cozy and simple, but renovating the kitchen might crack the bathroom. Microservices are like separate modular units — each can be rebuilt independently without touching the others.'
+  },
+  // Load Balancing
+  'L4 vs L7': {
+    explain: '<strong>Layer 4 (L4)</strong> load balancing = distributes traffic based on IP address and TCP port only. Fast but dumb — it doesn\'t look inside the request. <strong>Layer 7 (L7)</strong> = reads the actual HTTP request — can route based on URL path, headers, cookies. Slower but smarter: <code>/api</code> goes to API servers, <code>/static</code> goes to CDN.',
+    analogy: '📬 L4 = a mail sorter who routes packages by zip code only (fast). L7 = a sorter who opens the box and reads the label to send to the exact department (smarter but slower).'
+  },
+  'Round Robin': {
+    explain: '<strong>Round robin</strong> = send request 1 to server A, request 2 to server B, request 3 to server C, request 4 back to server A... Simple, fair, and works great when all servers have equal capacity. Fails when servers have different power — a weak server gets the same load as a strong one.',
+    analogy: '👨‍🏫 A teacher calling on students one by one, going around the room in order. Fair, predictable, but doesn\'t account for the fact that some students answer faster than others.'
+  },
+  'Least Connections': {
+    explain: '<strong>Least connections</strong> = send the next request to whichever server currently has the fewest active connections. Smarter than round robin — a slow server accumulates requests and gets fewer new ones automatically. Works great when requests have variable processing times.',
+    analogy: '🏪 At a grocery store, you look at which checkout lane has the shortest line and join that one — not blindly joining the "next" lane in rotation.'
+  },
+  'Consistent Hashing': {
+    explain: '<strong>Consistent hashing</strong> solves a painful problem: if you use <code>server = hash(key) % N</code> and add one server, almost every key maps to a different server — your entire cache is instantly invalidated. Consistent hashing uses a ring so adding one server only remaps <code>1/N</code> of keys.',
+    analogy: '🍕 Imagine your cache as a pizza cut into 8 slices. Regular hashing: add a 9th slice and the whole pizza gets recut — every slice changes. Consistent hashing: add a new slice by splitting just one existing slice. Only that slice\'s customers are affected.'
+  },
+  'Sticky Sessions': {
+    explain: '<strong>Sticky sessions</strong> = a user\'s requests always go to the same server. Required when session data lives in server memory. Problem: that server becomes a bottleneck and SPOF. If it crashes, the user\'s session is gone. Better solution: store sessions in Redis so any server can handle any user.',
+    analogy: '🎰 Imagine a casino that always makes you play at the same table because your chips are there. If that dealer goes on break, you\'re stuck waiting. Better design: chips are digital, tracked centrally — sit at any table.'
+  },
+  'Health Checks': {
+    explain: '<strong>Health checks</strong> = the load balancer regularly pings each server: "are you alive?" If a server fails to respond 3 times in a row, it\'s removed from the pool. When it recovers and passes 2 consecutive checks, it\'s added back. This ensures traffic never goes to dead servers.',
+    analogy: '🩺 A doctor checking a patient\'s pulse every few seconds. If the pulse is gone for too long, you take action. If it comes back, you note recovery. The load balancer does this automatically for every server in its fleet.'
+  },
+  // Caching
+  'Cache-aside': {
+    explain: 'The most common pattern. <strong>App checks cache first</strong>. Hit → return value. Miss → fetch from DB, write to cache, return value. The app manages the cache explicitly. Cache only contains what was actually requested (lazy population). Simple but means first request for any key is always slow.',
+    analogy: '📚 You check your personal notes first. If the answer isn\'t there, you look it up in the textbook, then write it in your notes for next time. Your notes grow organically based on what you actually look up.'
+  },
+  'Write-through': {
+    explain: 'Every write goes to <strong>both cache and database simultaneously</strong>. Cache is always consistent with the DB. Reads are fast (always cache hit for written data). But writes are slower — you pay the DB write cost every time. Good for read-heavy data that must be consistent.',
+    analogy: '✏️ When a teacher grades your paper, they write the score in both your notebook and the school gradebook at the same time. Always consistent, but every grading takes twice as long.'
+  },
+  'Write-back': {
+    explain: 'Write to <strong>cache only</strong>, acknowledge to client immediately. Asynchronously flush to DB later. Fastest writes possible. Risk: if cache crashes before flushing, you lose data. Used where write speed matters more than durability (gaming leaderboards, analytics counters).',
+    analogy: '📝 You draft an email, it saves locally instantly. It syncs to the server a few seconds later. If your laptop dies before sync — the email is gone. Fast, but risky.'
+  },
+  'Write-around': {
+    explain: 'Writes go <strong>directly to the database, bypassing cache</strong>. Cache is only populated on reads. Prevents cache from being polluted with write-once data that might never be read again. Good for bulk imports or data that\'s rarely re-read after write.',
+    analogy: '🗄️ Filing documents directly in a storage room without making a photocopy first. The copy only gets made if someone actually asks to see the document later.'
+  },
+  'TTL': {
+    explain: '<strong>Time-To-Live</strong> = every cached value has an expiry time. After TTL, the key is deleted and the next request fetches fresh data from DB. Short TTL = fresh data, more DB hits. Long TTL = stale data, fewer DB hits. Choosing TTL is a trade-off between freshness and DB load.',
+    analogy: '🥛 Milk has an expiry date. You can use it until it expires — fast and convenient. After expiry, you must get fresh milk from the store (database). Set the expiry too short and you\'re running to the store constantly.'
+  },
+  'LRU/LFU': {
+    explain: '<strong>LRU (Least Recently Used)</strong> = when cache is full, evict the item that was accessed longest ago. Assumes recent = relevant. <strong>LFU (Least Frequently Used)</strong> = evict the item accessed fewest times total. Assumes popular = relevant. LRU is simpler and better for most use cases; LFU handles viral content better.',
+    analogy: '📖 LRU = clear out books you haven\'t opened in the longest time. LFU = clear out the book you\'ve opened the fewest times total. If you opened a book once last week vs a book 100 times last year, LRU keeps the recent one, LFU keeps the popular one.'
+  },
+  'Redis': {
+    explain: '<strong>Redis</strong> = in-memory key-value store. Sub-millisecond reads. Supports strings, lists, sets, sorted sets, hashes, pub/sub. Used for: caching, sessions, rate limiting, leaderboards, pub/sub messaging. 100,000 ops/sec on a single node. Data can optionally persist to disk.',
+    analogy: '⚡ Redis is like your desk. Your filing cabinet (database) has everything, but it\'s slow to walk there. Your desk has the 20 things you\'re actively working on — instant access. Redis is the desk of your system.'
+  },
+  'Memcached': {
+    explain: '<strong>Memcached</strong> = simple, fast, in-memory cache. Only supports key-value strings (no complex data types). Multi-threaded (better CPU utilization than Redis on multi-core). No persistence. Simpler than Redis — use it when you just need "remember this value for X minutes" without complex data structures.',
+    analogy: '📌 A sticky note on your monitor. Just a key and a value. Nothing fancy — but extremely fast to read. Redis is a full-featured notebook; Memcached is a sticky note.'
+  },
+  'CDN': {
+    explain: '<strong>Content Delivery Network</strong> = a global network of edge servers that cache your static content (images, videos, CSS, JS) close to users. Instead of fetching a video from a server in Virginia, a user in Delhi gets it from a nearby CDN node in Mumbai. Dramatically reduces latency and server load.',
+    analogy: '📦 Amazon has warehouses in every city — when you order, it ships from the nearest one. Without CDN, every user downloads from one central server. With CDN, content is pre-stocked near every user globally.'
+  },
+  // Databases
+  'SQL vs NoSQL': {
+    explain: '<strong>SQL</strong> = structured, fixed schema, supports joins and ACID transactions. Great for complex queries and relationships. <strong>NoSQL</strong> = flexible schema, designed for massive scale, simpler access patterns. Key-value, document, column, or graph stores. Choose based on data shape and access patterns — not popularity.',
+    analogy: '📊 SQL is a spreadsheet with strict column headers — every row must fit the structure. NoSQL is a collection of JSON files — each can have different fields. The spreadsheet is easier to query across rows; the JSON files are easier to change and scale.'
+  },
+  'ACID': {
+    explain: '<strong>Atomicity</strong> = all steps of a transaction succeed or none do. <strong>Consistency</strong> = DB stays in a valid state. <strong>Isolation</strong> = concurrent transactions don\'t interfere. <strong>Durability</strong> = committed data survives crashes. This is why banks use PostgreSQL — you never want a payment to be half-processed.',
+    analogy: '💸 You transfer ₹1000 to a friend. ACID ensures: money leaves your account AND arrives in theirs — or neither happens. Without it, money could vanish in transit if the server crashes mid-transaction.'
+  },
+  'CAP Theorem': {
+    explain: 'A distributed database can only guarantee 2 of 3: <strong>C</strong>onsistency (every read returns the latest write), <strong>A</strong>vailability (every request gets a response), <strong>P</strong>artition tolerance (works even if network splits). Since partitions happen in real networks, the real choice is: CP (refuse requests when split) vs AP (serve possibly stale data when split).',
+    analogy: '🔺 Like a triangle where you can only have two sides be strong. Cassandra is AP — it keeps serving during network splits but might show stale data. ZooKeeper is CP — it stops serving during splits rather than risk inconsistency. You pick based on whether showing wrong data or refusing service is worse.'
+  },
+  'Sharding': {
+    explain: '<strong>Sharding</strong> = split your database horizontally across multiple machines. User IDs 1-1M go to shard 1, 1M-2M to shard 2, etc. Each shard is a separate database with its own storage and compute. You do this when a single DB can\'t handle the data size or write throughput.',
+    analogy: '📁 Instead of one massive filing cabinet with every document, split into 26 cabinets — A through Z. Each cabinet handles a fraction of the total. Querying by name? Go straight to the right cabinet. Need everything at once? You have to check all 26.'
+  },
+  'Replication': {
+    explain: '<strong>Replication</strong> = keep identical copies of your database on multiple machines. One primary receives writes and replicates to replicas. If the primary dies, a replica is promoted. Also spreads read load across replicas. The tradeoff: lag between write and replica sync means replicas might be slightly behind.',
+    analogy: '📷 Replication is like keeping backup copies of important photos. The original (primary) is where new photos are added. The copies (replicas) are kept in sync. If the original is lost, a copy takes over immediately.'
+  },
+  'Read Replicas': {
+    explain: '<strong>Read replicas</strong> = extra copies of your database dedicated to serving read queries, offloading them from the primary. Most apps are 80-90% reads — replicas absorb that traffic. Writes still go to the primary. Replicas may lag slightly (eventual consistency).',
+    analogy: '📖 A library makes photocopies of a popular book and puts them on multiple shelves. Anyone who wants to read grabs a copy — they don\'t all queue for the original. New chapters are only added to the original and then copied to all shelves.'
+  },
+  'Indexing': {
+    explain: '<strong>Indexes</strong> = a sorted data structure (usually a B-tree) that lets the DB find rows without scanning the entire table. A query on an unindexed column scans every row — O(n). With an index on that column, it\'s O(log n). Indexes speed reads massively but slow writes (index must be updated on every insert/update).',
+    analogy: '📚 A book\'s index in the back lets you jump to "Redis" on page 247 instantly. Without the index, you\'d read every page. The trade-off: someone had to create and maintain that index as the book was written.'
+  },
+  'Eventual Consistency': {
+    explain: '<strong>Eventual consistency</strong> = after a write, all replicas will eventually have the same data — but not necessarily immediately. For a brief window, different users might see different values. This is acceptable for most social media (a few milliseconds lag on a like count is fine) but not for banking.',
+    analogy: '🌍 When breaking news happens, different TV channels report it at slightly different times — but eventually they all have the same story. Your bank balance, however, must be the same everywhere instantly — no eventual consistency there.'
+  },
+  // Networking
+  'DNS': {
+    explain: '<strong>DNS (Domain Name System)</strong> = the phone book of the internet. Translates "google.com" into an IP address (142.250.x.x) that routers understand. Multiple layers of caching (browser → OS → ISP → root DNS) mean most lookups are fast. DNS TTL determines how long the cached answer lives.',
+    analogy: '📞 You know your friend as "Priya" — but to call her, you need her phone number. DNS is the contact list: you type "google.com" (the name), DNS gives back "142.250.80.46" (the phone number your browser can actually dial).'
+  },
+  'TCP vs UDP': {
+    explain: '<strong>TCP</strong> = reliable, ordered, connection-based. Guarantees every packet arrives and in order. Slower (handshake, acknowledgements). Use for: HTTP, email, file transfers. <strong>UDP</strong> = fire-and-forget. No guarantees, no ordering. Faster. Use for: video streaming, gaming, DNS — where speed matters more than perfection.',
+    analogy: '📬 TCP = certified mail — you get a receipt confirming delivery, and packages arrive in order. UDP = dropping postcards in a mailbox — fast, no receipt, might arrive out of order or not at all. For a live video call, a dropped frame is fine. For a bank transfer, every byte must arrive.'
+  },
+  'HTTP/HTTPS': {
+    explain: '<strong>HTTP</strong> = the language browsers and servers use to communicate. Request/response protocol. <strong>HTTPS</strong> = HTTP with TLS encryption — all data between browser and server is encrypted so nobody in between can read it. In 2024, everything should be HTTPS.',
+    analogy: '📮 HTTP = sending a postcard — anyone handling it can read the message. HTTPS = sending a sealed letter in a tamper-evident envelope — only the recipient can read it, and they can verify it wasn\'t opened.'
+  },
+  'TLS Handshake': {
+    explain: 'Before any encrypted data flows, browser and server perform a <strong>TLS handshake</strong>: exchange certificates to verify identity, negotiate encryption algorithms, and create a shared secret key. All subsequent communication is encrypted with that key. Adds ~1 round-trip latency but happens once per connection.',
+    analogy: '🤝 Two spies meet and agree on a secret code before exchanging information. The handshake = establishing the secret code. Everything after = speaking in that code so nobody listening in can understand.'
+  },
+  'Reverse Proxy': {
+    explain: 'A <strong>reverse proxy</strong> sits in front of your servers and intercepts all incoming requests. It can load balance, cache responses, terminate SSL, compress content, and protect backend servers (clients never know backend IPs). Nginx is the most common reverse proxy.',
+    analogy: '🏢 The reception desk of a building. Every visitor checks in at reception — they never go directly to individual offices. Reception routes them to the right person, keeps a log, and can block unwanted visitors.'
+  },
+  'API Gateway': {
+    explain: 'An <strong>API Gateway</strong> is a specialized reverse proxy for microservices. Single entry point for all API calls. Handles: authentication, rate limiting, request routing to the right microservice, response aggregation, SSL termination, and logging. Clients call one URL; the gateway handles the complexity behind.',
+    analogy: '✈️ An airport check-in desk. You hand over your passport once — they verify identity, check your booking, assign your gate, and send you through. You don\'t separately knock on the door of every airline, security, and gate agent.'
+  },
+  // Security
+  'Authentication': {
+    explain: '<strong>Authentication</strong> = proving who you are. "I am Nikhil" — the system verifies this claim. Methods: password + username, OAuth tokens, biometrics. Failed authentication = system rejects you. This is step 1 before any authorization happens.',
+    analogy: '🪪 Showing your ID at the entrance. The bouncer checks: is this a real ID? Does the photo match your face? That\'s authentication. What rooms you\'re allowed in is authorization — separate question.'
+  },
+  'Authorization': {
+    explain: '<strong>Authorization</strong> = what are you allowed to do? Even after you\'re authenticated (proven who you are), authorization checks your permissions. An intern at Google is authenticated but not authorized to deploy to production. Role-based access control (RBAC) is the standard system.',
+    analogy: '🔑 A hotel key card gets you into the hotel (authentication). But it only opens your specific room, not room 301 or the executive lounge (authorization). Same person, different levels of access.'
+  },
+  'JWT': {
+    explain: '<strong>JSON Web Token</strong> = a compact, signed token that contains claims about a user (user ID, roles, expiry). Server signs it with a secret key. Client stores it and sends it with every request. Server validates the signature — no DB lookup needed! Stateless authentication at scale.',
+    analogy: '🎫 A concert wristband. The venue stamps it once (signs it). Security staff at each door check the stamp is genuine — they don\'t call the ticketing office each time. If the stamp looks right, you get in.'
+  },
+  'OAuth': {
+    explain: '<strong>OAuth 2.0</strong> = a protocol for delegated authorization. "Sign in with Google" uses OAuth. You give Google permission to share limited info (name, email) with an app — without giving the app your Google password. The app gets an access token valid for specific scopes.',
+    analogy: '🚗 Giving a valet your car key. A valet key only starts the car and opens the door — it doesn\'t open the glove compartment or the trunk. You give limited, scoped access. If the valet misbehaves, you revoke just that key.'
+  },
+  'Rate Limiting': {
+    explain: '<strong>Rate limiting</strong> = cap how many requests a client can make in a time window. "100 requests per minute per user." Prevents DDoS attacks, API abuse, and ensures fair resource sharing. Common algorithms: token bucket (smooth), sliding window (precise), fixed window (simple).',
+    analogy: '🚰 A water tap with a flow regulator. No matter how hard you turn it, only so much water flows per minute. This prevents one person from draining the entire water supply, leaving nothing for others.'
+  },
+  'HTTPS': {
+    explain: 'Same as HTTP but with TLS encryption. All data is encrypted between browser and server. Certificates from Certificate Authorities (CAs) verify server identity. Without HTTPS, anyone on the same network (coffee shop WiFi) can read your traffic.',
+    analogy: '🔐 Putting your message in a locked box before handing it to the postal service. Even if the postal worker reads it, they only see the locked box. Only the recipient has the key.'
+  },
+  // Reliability
+  'SLO/SLA': {
+    explain: '<strong>SLO (Service Level Objective)</strong> = an internal target you commit your team to: "p99 latency under 200ms." <strong>SLA (Service Level Agreement)</strong> = a contract with your customer with financial penalties if you miss it. SLO is what you aim for. SLA is what you get penalized for missing.',
+    analogy: '🎯 SLO = your personal goal of getting to work by 9am. SLA = the contract with your boss: if you\'re late more than twice a month, you lose your bonus. One is self-imposed; the other has consequences.'
+  },
+  'Circuit Breaker': {
+    explain: 'When a downstream service starts failing, a <strong>circuit breaker</strong> stops sending requests to it. Instead of waiting for timeouts on every request (slow fail), the circuit "trips" and requests fail fast immediately. After a recovery period, it lets a few test requests through. Prevents cascade failures.',
+    analogy: '⚡ Electrical circuit breaker in your home. Instead of letting a short circuit burn your whole house down, the breaker trips — cutting power to that circuit only. When the fault is fixed, you reset the breaker.'
+  },
+  'Bulkhead': {
+    explain: '<strong>Bulkhead pattern</strong> = isolate failures so they don\'t cascade. Give each service its own thread pool or connection pool. If the Payment service is slow and exhausts its thread pool, the User service still has its own pool and keeps working. Named after watertight compartments in ships.',
+    analogy: '🚢 A ship divided into watertight compartments. If one compartment floods, the others stay dry — the ship doesn\'t sink. Without bulkheads, one hole floods the whole ship. Titanic had too few.'
+  },
+  'Retry Logic': {
+    explain: '<strong>Retry with exponential backoff and jitter</strong> = if a request fails, wait a bit and try again. But don\'t retry immediately (thundering herd). Wait 1s, then 2s, then 4s, then 8s (exponential). Add random jitter so not all clients retry at the same millisecond.',
+    analogy: '📞 Calling a friend whose line is busy. If you redial instantly over and over, you\'re making it worse. Better: wait a bit, try again. If still busy, wait longer. Jitter = different people waiting different amounts so they don\'t all call back at the same second.'
+  },
+  'Graceful Degradation': {
+    explain: '<strong>Graceful degradation</strong> = when a component fails, the system keeps working in a reduced capacity instead of completely breaking. Netflix can\'t load recommendations? Show popular titles instead. Search is down? Show the homepage. Users experience reduced functionality, not zero functionality.',
+    analogy: '🚘 A car losing one headlight — you can still drive, just more carefully and at reduced speed. Compare to total engine failure. Graceful degradation = keep going at reduced capacity vs complete stop.'
+  },
+  'Heartbeat': {
+    explain: 'A <strong>heartbeat</strong> is a regular "I\'m alive" signal a server sends to a coordinator or its peers. If heartbeats stop arriving within a timeout window, the coordinator marks the server as dead and triggers failover. Used in distributed databases, leader election, and cluster management.',
+    analogy: '❤️ A doctor monitoring a patient\'s heartbeat. As long as the beep comes regularly, everything is fine. If the beep stops for too long, alarms trigger and the crash team responds. Servers do the same for each other.'
+  },
+  // Distributed Systems
+  'Consensus': {
+    explain: '<strong>Consensus</strong> = getting multiple servers to agree on a single value, even when some might fail or be slow. The hard problem: you can\'t just ask "everyone vote yes/no" — what if messages get lost or servers crash mid-vote? Algorithms like <strong>Raft</strong> and <strong>Paxos</strong> solve this formally.',
+    analogy: '🗳️ A committee deciding on a budget where some members might not show up or might lose their ballot. Consensus algorithms ensure the group reaches a valid decision even with partial participation and message loss.'
+  },
+  'Leader Election': {
+    explain: 'In a distributed system, one node is often the <strong>leader</strong> — the one that coordinates writes, makes decisions, or holds the lock. When the leader dies, nodes must elect a new one quickly and correctly. Raft uses logs and term numbers to ensure only one leader at a time.',
+    analogy: '👑 A company needs exactly one CEO. If the CEO leaves, the board elects a new one through a formal process. During the transition, no major decisions are made. Leader election ensures there\'s always exactly one — never zero, never two.'
+  },
+  'Distributed Locks': {
+    explain: 'A <strong>distributed lock</strong> ensures only one process across many servers can do something at a time. Redis SETNX is commonly used: "set this key only if it doesn\'t exist, with TTL." If you get the key, you hold the lock. If not, someone else does. TTL prevents deadlocks if the holder crashes.',
+    analogy: '🚽 A single-occupancy restroom with a lock. First person in locks it — nobody else can enter. When they leave (or if they\'re in too long, the lock auto-expires), the next person can get in. TTL = the door auto-unlocks after 30 seconds so it never gets permanently stuck.'
+  },
+  'Two-Phase Commit': {
+    explain: '<strong>2PC</strong> = a protocol to coordinate a transaction across multiple databases. Phase 1 (Prepare): coordinator asks all participants "can you commit?" Each says yes/no. Phase 2 (Commit): if all say yes, coordinator sends commit to all. If any says no, abort all. Guarantees atomicity across DBs but is slow and blocks on failure.',
+    analogy: '💍 Planning a surprise party. Phase 1: coordinator calls all guests "can you come Saturday?" Everyone says yes. Phase 2: coordinator confirms "OK, everyone come Saturday." If one person says no, the whole event is cancelled to maintain the surprise. Safe but requires everyone to wait for all confirmations.'
+  },
+  'Vector Clocks': {
+    explain: '<strong>Vector clocks</strong> track causality across distributed nodes. Each node maintains a counter per node. When events happen or messages are sent, clocks are incremented and merged. This lets you determine if event A happened before B, B before A, or if they\'re concurrent (conflict).',
+    analogy: '📅 Imagine two people editing a Google Doc offline. When they sync, who edited first? Vector clocks track the "happened-before" relationship — like timestamps but reliable across different machines with potentially different clocks.'
+  },
+  'Idempotency': {
+    explain: 'An <strong>idempotent</strong> operation can be applied multiple times without changing the result beyond the first application. Crucial for safe retries. Setting a value to 5 is idempotent (do it 10 times = still 5). Adding 5 to a value is NOT idempotent (do it 10 times = +50).',
+    analogy: '🔘 Pressing the elevator "close door" button. Press it 10 times — the door closes once. That\'s idempotent. Compare to pressing "floor 5" — each press doesn\'t add another trip. But pressing "add item to cart" twice adds two items — not idempotent.'
+  },
+  // Message Queues
+  'Producer-Consumer': {
+    explain: '<strong>Producer</strong> creates messages and puts them in the queue. <strong>Consumer</strong> reads messages from the queue and processes them. They operate independently — producers don\'t wait for consumers. This decoupling means either side can fail, slow down, or scale independently without affecting the other.',
+    analogy: '🏭 A factory assembly line. Workers (producers) add parts to a conveyor belt. Workers at the other end (consumers) take parts off and assemble them. The belt buffers production — if assembly slows, the belt fills up but production continues.'
+  },
+  'Pub/Sub': {
+    explain: '<strong>Publish/Subscribe</strong> = a message pattern where publishers send to topics, not directly to subscribers. Any number of subscribers can listen to a topic independently. Publishers don\'t know who\'s listening. One event → many consumers react. Kafka, Google Pub/Sub, AWS SNS implement this.',
+    analogy: '📻 A radio broadcast. The radio station (publisher) sends one signal. Thousands of radios (subscribers) tune in independently. The station doesn\'t know who\'s listening or how many. Adding a new listener requires zero changes to the station.'
+  },
+  'Message Ordering': {
+    explain: 'Message queues don\'t always guarantee order across partitions. Within a Kafka partition, messages are strictly ordered (FIFO). Across partitions, ordering is lost. If order matters (e.g., "debit then credit" must happen in sequence), send related messages to the same partition using a consistent key.',
+    analogy: '📬 Letters in a single mailbox arrive in order. But if you have 5 mailboxes (partitions) and letters go to different boxes randomly, the overall sequence is lost. To maintain order, keep related letters in the same box.'
+  },
+  'Backpressure': {
+    explain: '<strong>Backpressure</strong> = a mechanism for consumers to signal producers to slow down when they can\'t keep up. Without backpressure, a fast producer fills the queue indefinitely until it runs out of memory and crashes. With backpressure, the queue applies resistance upstream: "slow down, I\'m full."',
+    analogy: '🚿 A drainpipe clogged: if you keep pouring water at full speed, it overflows. Backpressure is the water rising in the sink — naturally slowing you down. Reactive Streams formalized this for software.'
+  },
+  'Kafka': {
+    explain: '<strong>Apache Kafka</strong> = distributed event streaming platform. Topics are split into partitions stored across brokers. Messages are persisted to disk (durable). Consumers track their own offset (position) so they can replay messages. High throughput (millions of messages/sec). Used by LinkedIn, Uber, Netflix.',
+    analogy: '📰 A newspaper printing millions of copies and archiving every edition. Subscribers (consumers) read at their own pace and can request back-issues (replay). The newspaper doesn\'t care how many subscribers there are or if one stops reading for a week.'
+  },
+  'RabbitMQ': {
+    explain: '<strong>RabbitMQ</strong> = message broker using AMQP protocol. Supports flexible routing (exchanges, queues, binding keys). Messages are acknowledged — if consumer crashes, message is re-queued. Lower throughput than Kafka but more routing flexibility. Better for task queues where each message needs exactly-once processing.',
+    analogy: '📦 A package sorting facility. Each package (message) gets routed to the right delivery truck (queue) based on destination (routing key). If a truck breaks down, packages go back to the facility to be re-routed. Kafka is a firehose; RabbitMQ is a smart router.'
+  },
+  // LLD
+  'Single Responsibility': {
+    explain: 'A class should have <strong>one reason to change</strong>. If your UserService handles authentication, profile updates, email sending, AND payment processing — changing email templates requires touching the same class as payment logic. Split into AuthService, ProfileService, EmailService, PaymentService.',
+    analogy: '👨‍🍳 A chef who also does accounting, drives the delivery truck, and designs the menu will be terrible at all of them. One person, one job. A class, one responsibility.'
+  },
+  'Open-Closed': {
+    explain: 'Classes should be <strong>open for extension, closed for modification</strong>. Adding new behavior shouldn\'t require editing existing code. Instead of: if (type == "STRIPE") else if (type == "PAYPAL"), define a PaymentProcessor interface and create StripeProcessor, PaypalProcessor classes. Adding Razorpay = new class only.',
+    analogy: '🔌 A power strip is open to new devices (extension) but you don\'t rewire the strip each time you add a plug (modification). New devices just plug in using the existing standard interface.'
+  },
+  'Liskov Substitution': {
+    explain: 'A subclass should be <strong>substitutable for its parent class</strong> without breaking behavior. If code works with a Shape, it should work with Circle or Rectangle without special cases. If Square extends Rectangle but overrides setWidth to also change height (breaking contracts), code expecting Rectangle will break.',
+    analogy: '🦆 If it walks like a duck and quacks like a duck, it should work wherever a duck is expected. Rubber Duck extends Duck but quacks with a squeak and doesn\'t swim — it violates Liskov because duck-expecting code breaks with it.'
+  },
+  'Interface Segregation': {
+    explain: 'Don\'t force classes to implement methods they don\'t need. A fat IAnimal interface with fly(), swim(), run() forces Dog to implement fly() as a stub. Better: IFlyable, ISwimmable, IRunnable. Dog implements just IRunnable and ISwimmable.',
+    analogy: '📝 Don\'t give a receptionist a job description that includes "perform surgery" just because the doctor\'s role description has it. Each role should only include what\'s actually relevant to that role.'
+  },
+  'Dependency Inversion': {
+    explain: 'High-level modules should depend on <strong>abstractions</strong>, not concrete implementations. OrderService should depend on IPaymentGateway interface, not StripeGateway class. This way, you can swap Stripe for PayPal (or mock it in tests) without touching OrderService at all.',
+    analogy: '🔦 A flashlight accepts any brand of battery that fits the standard size — it depends on the "battery interface" (size + polarity), not a specific brand. Swap Duracell for Energizer — flashlight works. Depend on the standard, not the brand.'
+  },
+  // Design Patterns
+  'Singleton': {
+    explain: 'Ensures <strong>only one instance</strong> of a class exists. Used for: DB connection pool, config manager, logger. Thread-safe implementation requires double-checked locking or the initialization-on-demand holder pattern. Overused — be careful, singletons make testing hard and can hide global state.',
+    analogy: '🌍 There\'s only one Earth. No matter how many people look for a planet to live on, they all end up at the same one. A Singleton is the "one Earth" of your codebase — globally accessible, only one instance.'
+  },
+  'Factory': {
+    explain: 'Encapsulates object creation logic. Instead of <code>new StripeProcessor()</code> scattered everywhere, call <code>PaymentFactory.create(userCountry)</code>. The factory decides which concrete class to instantiate. Callers only know the interface. Adding a new payment method = add a new class + update the factory.',
+    analogy: '🏭 A car factory takes in an order ("I want a SUV, red, automatic") and returns a car. You don\'t build the car yourself — you specify what you want and the factory handles the construction details.'
+  },
+  'Strategy': {
+    explain: 'Defines a family of algorithms, encapsulates each, and makes them interchangeable. The context class holds a reference to a strategy interface and delegates to it. Swap strategies at runtime without changing the context.',
+    analogy: '🗺️ A navigation app using different route strategies: fastest route, shortest distance, avoid highways, most scenic. Same app, different strategy injected. You switch the strategy; the app\'s core logic doesn\'t change.'
+  },
+  'Observer': {
+    explain: 'Subject maintains a list of observers. When state changes, it notifies all of them. This is the in-process version of pub/sub. EventEmitters, React\'s state updates, and DOM event listeners all implement observer.',
+    analogy: '📱 You follow someone on Instagram. When they post, you (and all followers) get notified. You didn\'t request the post — you subscribed once and get all future updates automatically. Instagram\'s notification system is an observer pattern at scale.'
+  },
+  // Interview Strategy
+  'Structure': {
+    explain: 'The 5-step framework for any system design interview: 1) <strong>Requirements</strong> (clarify what to build), 2) <strong>Capacity estimation</strong> (how big?), 3) <strong>High-level design</strong> (boxes and arrows), 4) <strong>Deep dive</strong> (interesting components), 5) <strong>Trade-offs</strong> (what did you sacrifice?). Always in this order.',
+    analogy: '🏗️ Designing a building: first understand what it\'s for (requirements), estimate how many people it needs to hold (capacity), sketch the floor plan (high-level), detail the structural engineering of the critical parts (deep dive), then discuss cost vs safety trade-offs.'
+  },
+  'Traffic Estimation': {
+    explain: 'The formula: <strong>DAU × requests/user/day ÷ 86,400 = avg QPS. × 2-3 for peak.</strong> Memorize: 1 day ≈ 100K seconds. Common sizes: char=1B, int=4B, UUID=16B, image=100KB, video=50MB. State assumptions out loud. Interviewers care about your reasoning, not the exact number.',
+    analogy: '📊 Like estimating how many pizza slices to order for a party: (guests × slices/person). You\'ll be off by some amount, but 10 guests × 3 slices = 30 slices is far better than guessing. Same principle for QPS estimation.'
+  },
+  'Bottleneck ID': {
+    explain: 'Find the <strong>slowest link</strong> in your chain. App servers scale easily (stateless). Databases don\'t (stateful). Given your QPS estimate: PostgreSQL handles ~2K writes/sec. If you need 10K writes/sec, that\'s your bottleneck — needs sharding. Redis handles 100K ops/sec — rarely the bottleneck.',
+    analogy: '🏃 In a relay race, the team\'s speed is limited by the slowest runner. Finding the bottleneck = finding the slowest runner. You can train everyone else to be faster, but overall team speed is still capped by them.'
+  },
+  'Trade-offs': {
+    explain: 'Every design choice sacrifices something. Name the trade-off explicitly: "Caching improves read latency but adds staleness risk and complexity." Anchor to requirements: "For banking, I choose CP over AP because returning a wrong balance is worse than refusing a request." End with: "I\'d revisit this given more time."',
+    analogy: '⚖️ Every engineering decision is a scale. More cache = faster reads but stale data. More replicas = more availability but higher cost. Your job isn\'t to find a perfect solution — it\'s to clearly articulate which side of each scale you chose and why.'
+  },
+  'What Interviewers Expect': {
+    explain: 'Not perfection — <strong>process</strong>. Do you ask clarifying questions? Can you estimate order of magnitude? Do you identify the one hard problem in the system? Do you handle feedback without getting defensive? Do you know concrete numbers (Redis=100K ops/sec, Postgres=5K reads/sec)? These signal seniority.',
+    analogy: '👨‍⚖️ A judge doesn\'t expect lawyers to know every law by heart. They evaluate: does this lawyer ask the right questions, reason clearly, acknowledge weaknesses, and engage thoughtfully with counterarguments? Same for system design interviewers.'
+  },
+  // Practice Problems
+  'URL Shortener': {
+    explain: 'Design: generate a 7-char base62 code for each URL, store in key-value DB (DynamoDB/Redis), cache hot URLs in Redis (viral links = millions of reads), use 302 redirect for click tracking. The hard problems: collision-free ID generation at scale and handling 100:1 read/write ratio.',
+    analogy: '🔗 Like a URL shortener in real life — bit.ly takes "amazon.com/very/long/product/url?123" and gives you "bit.ly/abc1234". The magic is the 7-character code fitting trillions of possible URLs and the ability to serve millions of redirects per second.'
+  },
+  'Rate Limiter': {
+    explain: 'Use Redis with atomic INCR + TTL for distributed rate limiting. Token bucket algorithm for smooth limiting. Return X-RateLimit-Remaining headers. Place at API Gateway for infrastructure protection, at service level for business rules. Sliding window log (Redis sorted set) gives most accurate limiting.',
+    analogy: '🚦 A toll booth that lets 100 cars through per hour. Cars beyond 100 must wait. If you have 50 toll booths (servers), you need a shared counter in Redis — not 50 independent counters that each allow 100 (which would allow 5000 total).'
+  },
+  'LRU Cache': {
+    explain: 'HashMap (O(1) lookup) + Doubly Linked List (O(1) move to head, O(1) evict from tail). On get: find node via map, move to head. On put: if full, evict tail node, remove from map, add new node at head. O(1) all operations. Java: LinkedHashMap with accessOrder=true.',
+    analogy: '📺 Your "recently watched" list on Netflix. The show you just watched goes to the top. Shows you haven\'t watched in months fall to the bottom and eventually disappear to make room for new ones. That\'s LRU eviction.'
+  },
+  'Google Drive': {
+    explain: 'Chunk files into 5-10MB blocks, upload via pre-signed S3 URLs (bypasses app servers), dedup identical blocks by content hash. Metadata in PostgreSQL (sharded by user_id). Sync via block-level diff — only upload changed chunks. WebSocket for real-time sync notifications.',
+    analogy: '📁 When you update one slide in a 100-slide presentation, Google Drive uploads only that changed slide, not all 100. That\'s delta sync — upload the difference, not the whole file.'
+  },
+  'Autocomplete': {
+    explain: 'Trie data structure: each node = a character, path from root = a prefix, each node stores top-N completions pre-computed. Query = O(prefix length). Scale: load trie into RAM (~1-2GB for 1M queries). Shard by first character. Cache top prefixes in Redis (top 1% prefixes = 90% of traffic). Rebuild hourly via MapReduce.',
+    analogy: '🔍 As you type "sys" in Google Search, a pre-built Trie instantly knows the top 10 completions for that prefix — "system design", "system32", "syscall"... — without scanning millions of past searches each time.'
+  },
+  'Snowflake ID': {
+    explain: '64-bit integer = [1 sign bit] + [41-bit timestamp ms] + [10-bit machine ID] + [12-bit sequence]. Generates 4096 unique IDs per machine per millisecond. Sortable by time. No central coordination. Clock skew = refuse to generate until clock catches up. Used by Twitter for tweet IDs.',
+    analogy: '🏷️ Like a serial number that encodes: which factory made it (machine ID), when it was made (timestamp), and which one in that millisecond\'s batch (sequence). Globally unique without any central registry — each factory manages its own numbering.'
+  }
+};
+
 function buildContent() {
   const main = document.getElementById('main-content');
   sections.forEach((s, si) => {
     const div = document.createElement('div');
     div.id = s.id;
     div.className = 'section' + (si === 0 ? ' active' : '');
-    
-    let topicsHtml = s.topics.map(t => `<span class="topic-tag">${t}</span>`).join('');
-    
-    let qaHtml = s.qa.map((item, qi) => `
-      <div class="qa-block">
-        <div class="q-label">Question 0${qi + 1}</div>
-        <div class="question">${item.q}</div>
-        <div class="answer">
-          <button class="answer-toggle" onclick="toggleAnswer(this)">
-            <span>Reveal breakdown</span>
-            <span class="toggle-icon">+</span>
-          </button>
-          <div class="answer-body">${item.a}</div>
+
+    // Build interactive topic tags
+    let topicsHtml = s.topics.map(t =>
+      `<span class="topic-tag" data-topic="${t}" onclick="showTopicExplainer(this, '${s.id}')">${t}</span>`
+    ).join('');
+
+    // Concept box
+    const cb = conceptBoxes[s.id];
+    let conceptHtml = '';
+    if (cb) {
+      conceptHtml = `<div class="concept-box">
+        <div class="concept-box-header">
+          <span class="concept-emoji">${cb.emoji}</span>
+          <span class="concept-box-title">${cb.title}</span>
         </div>
-      </div>
-    `).join('<div class="divider"></div>');
-    
+        <p>${cb.text}</p>
+        ${cb.analogy ? `<div class="analogy">${cb.analogy}</div>` : ''}
+      </div>`;
+    }
+
+    // Build QA blocks with optional extra diagrams
+    let qaHtml = s.qa.map((item, qi) => {
+      const extraDiagram = (extraDiagrams[s.id] && extraDiagrams[s.id][qi]) ? extraDiagrams[s.id][qi] : '';
+      return `
+        <div class="qa-block" data-question="${item.q.toLowerCase()}">
+          <div class="q-label">Question 0${qi + 1}</div>
+          <div class="question">${item.q}</div>
+          <div class="answer">
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              <span>Reveal breakdown</span>
+              <span class="toggle-icon">+</span>
+            </button>
+            <div class="answer-body">${item.a}${extraDiagram}</div>
+          </div>
+        </div>
+      `;
+    }).join('<div class="divider qa-divider"></div>');
+
     div.innerHTML = `
       <div class="section-title">${s.num}. ${s.title}</div>
       <div class="section-sub">Master these concepts for top-tier interviews</div>
+      ${conceptHtml}
+      <div class="topic-filter-hint">💡 Click any tag below to get a plain-English explanation of that topic</div>
       <div class="topics-bar">${topicsHtml}</div>
+      <div class="topic-explainer" id="explainer-${s.id}">
+        <div class="topic-explainer-header">
+          <span class="topic-explainer-name" id="explainer-name-${s.id}"></span>
+          <button class="topic-explainer-close" onclick="closeExplainer('${s.id}')">×</button>
+        </div>
+        <div class="topic-explainer-body" id="explainer-body-${s.id}"></div>
+      </div>
       <div class="divider"></div>
-      ${qaHtml}
+      <div class="qa-container" id="qa-${s.id}">
+        ${qaHtml}
+      </div>
     `;
     main.appendChild(div);
   });
+}
+
+function showTopicExplainer(tagEl, sectionId) {
+  const topic = tagEl.dataset.topic;
+  const isActive = tagEl.classList.contains('active');
+
+  // Deactivate all tags in this section
+  document.querySelectorAll(`#${sectionId} .topic-tag`).forEach(t => t.classList.remove('active'));
+
+  const panel = document.getElementById(`explainer-${sectionId}`);
+  const nameEl = document.getElementById(`explainer-name-${sectionId}`);
+  const bodyEl = document.getElementById(`explainer-body-${sectionId}`);
+
+  if (isActive) {
+    panel.classList.remove('visible');
+    return;
+  }
+
+  const data = topicExplainers[topic];
+  if (!data) {
+    panel.classList.remove('visible');
+    return;
+  }
+
+  tagEl.classList.add('active');
+  nameEl.textContent = topic;
+  bodyEl.innerHTML = `<p>${data.explain}</p>${data.analogy ? `<div class="t-analogy">${data.analogy}</div>` : ''}`;
+  panel.classList.add('visible');
+
+  // Smooth scroll to panel
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeExplainer(sectionId) {
+  document.getElementById(`explainer-${sectionId}`).classList.remove('visible');
+  document.querySelectorAll(`#${sectionId} .topic-tag`).forEach(t => t.classList.remove('active'));
 }
 
 function toggleAnswer(btn) {
